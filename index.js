@@ -1,10 +1,3 @@
-// ============================================================
-//  LINK LOCK V2 - Pippo Edition (Admin Version)
-//  Admin Password: pippo
-//  Decryption Password: pippo (FIXED)
-//  Shorter links!
-// ============================================================
-
 const MASTER_PASSWORD = "pippo";
 const DECRYPT_PASSWORD = "pippo";
 
@@ -208,7 +201,7 @@ function initApp() {
     
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            urlInput.value = 'https://example.com';
+            urlInput.value = '';
             resultBox.classList.remove('show');
             generatedLink = '';
             if (addExpiry && addExpiry.checked) {
@@ -258,7 +251,8 @@ function initApp() {
         });
     }
     
-    urlInput.value = 'https://example.com/secret-document';
+    // ===== URL DI DEFAULT VUOTO (rimosso esempio) =====
+    // urlInput.value = 'https://example.com/secret-document';
 }
 
 const styleSheet = document.createElement("style");
