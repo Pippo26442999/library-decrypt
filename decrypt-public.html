@@ -392,117 +392,6 @@
             letter-spacing: 2px;
         }
 
-        #result {
-            margin-top: 25px;
-            padding: 25px 20px 20px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            display: none;
-            color: #fff;
-            text-align: center;
-            animation: resultIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        #result.show {
-            display: block;
-        }
-
-        @keyframes resultIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .result-label {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 8px;
-        }
-
-        .result-check {
-            display: inline-block;
-            font-size: 24px;
-            margin-bottom: 4px;
-            animation: checkPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes checkPop {
-            0% { transform: scale(0); opacity: 0; }
-            60% { transform: scale(1.3); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .redirect-message {
-            margin: 12px 0 8px;
-        }
-
-        .redirect-message .redirect-text {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
-            letter-spacing: 0.3px;
-        }
-
-        .redirect-message .redirect-name {
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #4facfe, #2ed573);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-top: 6px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-        }
-
-        .waiting-message {
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 12px;
-            margin-top: 15px;
-            letter-spacing: 0.5px;
-        }
-
-        .waiting-message .dots::after {
-            content: '';
-            animation: dots 2s steps(4) infinite;
-        }
-
-        @keyframes dots {
-            0% { content: ''; }
-            25% { content: '.'; }
-            50% { content: '..'; }
-            75% { content: '...'; }
-            100% { content: ''; }
-        }
-
-        #hint-display {
-            margin-top: 10px;
-            padding: 8px 14px;
-            background: rgba(79, 172, 254, 0.05);
-            border-radius: 10px;
-            border: 1px solid rgba(79, 172, 254, 0.06);
-            display: none;
-        }
-
-        #hint-display.show {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-
-        #hint-display .hint-label {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        #hint-display .hint-text {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 13px;
-            margin-top: 2px;
-        }
-
         .error-box {
             background: rgba(233, 69, 96, 0.06);
             border: 1px solid rgba(233, 69, 96, 0.1);
@@ -618,9 +507,6 @@
             #preview .preview-name {
                 font-size: 30px;
             }
-            .redirect-message .redirect-name {
-                font-size: 24px;
-            }
             .form-group input {
                 padding: 14px 16px;
                 padding-left: 44px;
@@ -641,9 +527,6 @@
             }
             #preview .preview-name {
                 font-size: 24px;
-            }
-            .redirect-message .redirect-name {
-                font-size: 20px;
             }
         }
     </style>
@@ -875,25 +758,6 @@
             <div class="preview-name" id="preview-name"></div>
         </div>
 
-        <div id="result">
-            <div class="result-label">✅ Link decrypted</div>
-            <div class="result-check">🔓</div>
-
-            <div class="redirect-message">
-                <div class="redirect-text">You are about to be redirected to</div>
-                <div class="redirect-name" id="redirect-name"></div>
-            </div>
-
-            <div class="waiting-message">
-                Please wait<span class="dots"></span>
-            </div>
-
-            <div id="hint-display">
-                <div class="hint-label">💡 Hint</div>
-                <div class="hint-text" id="hint-text"></div>
-            </div>
-        </div>
-
         <div class="error-box" id="error-box">
             <h3>❌ Error</h3>
             <p id="error-message">Wrong password. Try again.</p>
@@ -908,7 +772,7 @@
     <script>
         // ============================================================
         //  DECRYPT - Fixed Password: pippo
-        //  Redirect immediato senza countdown
+        //  Redirect immediato - NESSUN RISULTATO VISUALIZZATO
         // ============================================================
 
         (function createParticles() {
@@ -947,15 +811,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const passwordInput = document.getElementById('password-input');
             const decryptBtn = document.getElementById('decrypt-btn');
-            const formSection = document.getElementById('form-section');
-            const resultDiv = document.getElementById('result');
             const errorBox = document.getElementById('error-box');
             const errorMessage = document.getElementById('error-message');
             const previewDiv = document.getElementById('preview');
             const previewName = document.getElementById('preview-name');
-            const hintDisplay = document.getElementById('hint-display');
-            const hintText = document.getElementById('hint-text');
-            const redirectName = document.getElementById('redirect-name');
             const passwordLabel = document.getElementById('password-label');
             const inputIcon = document.getElementById('input-icon');
 
@@ -1086,7 +945,6 @@
                 if (!hash) {
                     errorMessage.textContent = 'No link to decrypt.';
                     errorBox.classList.add('show');
-                    resultDiv.classList.remove('show');
                     return;
                 }
 
@@ -1097,8 +955,6 @@
                 }
 
                 errorBox.classList.remove('show');
-                resultDiv.classList.remove('show');
-                hintDisplay.classList.remove('show');
 
                 isProcessing = true;
                 decryptBtn.disabled = true;
@@ -1123,18 +979,11 @@
                     const decryptedData = await decryptData(compressed, DECRYPT_PASSWORD);
                     
                     let url = decryptedData;
-                    let hint = '';
-                    let shortName = compressed.n || 'site';
                     
                     try {
                         const parsed = JSON.parse(decryptedData);
                         if (parsed.u) {
                             url = parsed.u;
-                            if (parsed.h) {
-                                hint = parsed.h;
-                                hintText.textContent = hint;
-                                hintDisplay.classList.add('show');
-                            }
                             if (parsed.e) {
                                 const expiry = new Date(parsed.e);
                                 if (expiry < new Date()) {
@@ -1146,16 +995,12 @@
                         // Not JSON
                     }
 
-                    // Mostra il risultato brevemente
-                    resultDiv.classList.add('show');
-                    redirectName.textContent = shortName;
+                    showToast('✅ Link decrypted! Redirecting...', 'success');
                     
-                    showToast('✅ Link decrypted!', 'success');
-                    
-                    // Redirect immediato dopo 0.5s per far vedere il feedback
+                    // Redirect immediato
                     setTimeout(() => {
                         redirectToUrl(url);
-                    }, 500);
+                    }, 300);
 
                 } catch (error) {
                     errorMessage.textContent = error.message || 'Error during decryption.';
