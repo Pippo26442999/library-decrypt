@@ -7,7 +7,7 @@ A secure, client-side URL encryption tool with password protection. Encrypt any 
 ## ✨ Features
 
 - **🔐 Password Protection** - Protect your URLs with a decryption password
-- **🔒 Admin Panel** - Create encrypted links with a secure admin interface
+- **🔒 Encryption Panel** - Create encrypted links with a secure admin interface
 - **📱 User-Friendly Decryption** - Simple interface for users to decrypt and access protected links
 - **🎨 Modern UI** - Clean, dark-themed design with smooth animations
 - **🛡️ Anti-Developer Tools** - Protects against F12, right-click, and developer console access
