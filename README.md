@@ -1,6 +1,6 @@
 # 🔒 Link Lock V2 - Pippo Edition
 
-A secure, client-side URL encryption tool with password protection. Encrypt any URL with a fixed password and share it safely.
+A secure, client-side URL encryption tool with password protection. Encrypt any URL with a password and share it safely.
 
 ---
 
