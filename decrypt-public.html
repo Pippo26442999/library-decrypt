@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔓 Link Lock V2 - Decrypt</title>
+    <title>Link Lock V2 - Decrypt</title>
     <link rel="icon" href="favicon.ico">
     <style>
         * {
@@ -24,7 +24,6 @@
             overflow: hidden;
         }
 
-        /* ===== PUNTINI PIÙ VISIBILI ===== */
         .particles {
             position: fixed;
             top: 0;
@@ -457,50 +456,6 @@
             letter-spacing: 2px;
         }
 
-        #result .countdown {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 12px;
-            letter-spacing: 0.5px;
-        }
-
-        #result .countdown span {
-            color: #2ed573;
-            font-weight: 700;
-            font-size: 18px;
-            display: inline-block;
-            min-width: 24px;
-            animation: countPulse 1s ease-in-out infinite;
-        }
-
-        @keyframes countPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .countdown-bar {
-            width: 100%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-            margin-top: 12px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .countdown-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #2ed573, #4facfe);
-            border-radius: 2px;
-            width: 100%;
-            animation: countdownBar 5s linear forwards;
-        }
-
-        @keyframes countdownBar {
-            from { width: 100%; }
-            to { width: 0%; }
-        }
-
         .waiting-message {
             color: rgba(255, 255, 255, 0.15);
             font-size: 12px;
@@ -886,7 +841,7 @@
         })();
     </script>
 
-    <!-- ===== PUNTINI PIÙ VISIBILI ===== -->
+    <!-- ===== PUNTINI ===== -->
     <div class="particles" id="particles"></div>
 
     <div class="container" id="main-container">
@@ -929,15 +884,10 @@
                 <div class="redirect-name" id="redirect-name"></div>
             </div>
 
-            <div class="countdown" id="countdown">
-                Redirecting in <span id="countdown-number">5</span> seconds...
-            </div>
-            <div class="countdown-bar">
-                <div class="countdown-bar-fill" id="countdown-bar-fill"></div>
-            </div>
             <div class="waiting-message">
                 Please wait<span class="dots"></span>
             </div>
+
             <div id="hint-display">
                 <div class="hint-label">💡 Hint</div>
                 <div class="hint-text" id="hint-text"></div>
@@ -954,64 +904,43 @@
         </div>
     </div>
 
-    <script src="b64.js"></script>
     <script src="api.js"></script>
     <script>
         // ============================================================
         //  DECRYPT - Fixed Password: pippo
-        //  Puntini più grandi e visibili
+        //  Redirect immediato senza countdown
         // ============================================================
 
         (function createParticles() {
             const container = document.getElementById('particles');
-            const count = 60; // Più numerosi
-
-            // Colori per varietà
+            const count = 60;
             const colors = [
-                'rgba(46, 213, 115, 0.5)',   // verde
-                'rgba(79, 172, 254, 0.4)',   // blu
-                'rgba(255, 255, 255, 0.3)',  // bianco
-                'rgba(102, 126, 234, 0.4)',  // viola chiaro
-                'rgba(46, 213, 115, 0.3)'    // verde chiaro
+                'rgba(46, 213, 115, 0.5)',
+                'rgba(79, 172, 254, 0.4)',
+                'rgba(255, 255, 255, 0.3)',
+                'rgba(102, 126, 234, 0.4)',
+                'rgba(46, 213, 115, 0.3)'
             ];
 
             for (let i = 0; i < count; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                
-                // Dimensione più grande (3-7px)
                 const size = Math.random() * 4 + 3;
                 particle.style.width = size + 'px';
                 particle.style.height = size + 'px';
-                
-                // Colore casuale
                 particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                
-                // Posizione orizzontale casuale
                 particle.style.left = Math.random() * 100 + '%';
-                
-                // Durata casuale (8-25 secondi)
                 const duration = Math.random() * 17 + 10;
                 particle.style.animationDuration = duration + 's';
-                
-                // Ritardo iniziale (0-3 secondi)
                 const delay = Math.random() * 3;
                 particle.style.animationDelay = delay + 's';
-                
-                // Opacità di base
                 particle.style.opacity = Math.random() * 0.3 + 0.2;
-                
-                // Aggiungi glow (shadow)
                 particle.style.boxShadow = '0 0 8px ' + particle.style.background;
-                
                 container.appendChild(particle);
             }
         })();
 
         const DECRYPT_PASSWORD = "pippo";
-        let redirectTimer = null;
-        let currentUrl = '';
-        let countdownValue = 5;
         let isProcessing = false;
         let typingTimeout = null;
 
@@ -1024,9 +953,6 @@
             const errorMessage = document.getElementById('error-message');
             const previewDiv = document.getElementById('preview');
             const previewName = document.getElementById('preview-name');
-            const countdownDiv = document.getElementById('countdown');
-            const countdownNumber = document.getElementById('countdown-number');
-            const countdownBarFill = document.getElementById('countdown-bar-fill');
             const hintDisplay = document.getElementById('hint-display');
             const hintText = document.getElementById('hint-text');
             const redirectName = document.getElementById('redirect-name');
@@ -1119,36 +1045,6 @@
                 return null;
             }
 
-            function startCountdown(url, shortName) {
-                if (redirectTimer) {
-                    clearInterval(redirectTimer);
-                }
-                
-                formSection.classList.add('hidden');
-                previewDiv.classList.add('hidden');
-                
-                redirectName.textContent = shortName;
-                
-                countdownValue = 5;
-                countdownNumber.textContent = countdownValue;
-                countdownDiv.style.display = 'block';
-                
-                countdownBarFill.style.animation = 'none';
-                void countdownBarFill.offsetWidth;
-                countdownBarFill.style.animation = 'countdownBar 5s linear forwards';
-                
-                redirectTimer = setInterval(() => {
-                    countdownValue--;
-                    countdownNumber.textContent = countdownValue;
-                    
-                    if (countdownValue <= 0) {
-                        clearInterval(redirectTimer);
-                        redirectTimer = null;
-                        window.location.href = url;
-                    }
-                }, 1000);
-            }
-
             function extractPreviewData(hash) {
                 try {
                     const compressed = JSON.parse(atob(hash));
@@ -1176,6 +1072,11 @@
                 } else {
                     previewDiv.classList.remove('show');
                 }
+            }
+
+            // ===== REDIRECT IMMEDIATO =====
+            function redirectToUrl(url) {
+                window.location.href = url;
             }
 
             async function decryptLink() {
@@ -1245,16 +1146,16 @@
                         // Not JSON
                     }
 
-                    currentUrl = url;
-                    
+                    // Mostra il risultato brevemente
                     resultDiv.classList.add('show');
-                    
-                    formSection.classList.add('hidden');
-                    previewDiv.classList.add('hidden');
+                    redirectName.textContent = shortName;
                     
                     showToast('✅ Link decrypted!', 'success');
                     
-                    startCountdown(url, shortName);
+                    // Redirect immediato dopo 0.5s per far vedere il feedback
+                    setTimeout(() => {
+                        redirectToUrl(url);
+                    }, 500);
 
                 } catch (error) {
                     errorMessage.textContent = error.message || 'Error during decryption.';
