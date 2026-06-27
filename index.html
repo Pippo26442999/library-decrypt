@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Link Lock V2 - Admin</title>
+    <link rel="icon" href="favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background: rgba(26, 26, 46, 0.9);
+            backdrop-filter: blur(30px);
+            border-radius: 28px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 span {
+            background: linear-gradient(135deg, #2ed573, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-admin {
+            background: rgba(79, 172, 254, 0.12);
+            color: #4facfe;
+            border: 1px solid rgba(79, 172, 254, 0.15);
+        }
+
+        .badge-locked {
+            background: rgba(46, 213, 115, 0.12);
+            color: #2ed573;
+            border: 1px solid rgba(46, 213, 115, 0.15);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(79, 172, 254, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.02);
+            color: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-success {
+            background: rgba(46, 213, 115, 0.08);
+            color: #2ed573;
+            border: 1px solid rgba(46, 213, 115, 0.1);
+        }
+
+        .btn-success:hover {
+            background: rgba(46, 213, 115, 0.12);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box .result-label {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .result-box .result-value {
+            color: #fff;
+            word-break: break-all;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .result-box .result-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .advanced-toggle {
+            color: rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .advanced-toggle:hover {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .advanced-options {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .advanced-options.show {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2ed573;
+            cursor: pointer;
+        }
+
+        .info-box {
+            background: rgba(46, 213, 115, 0.04);
+            border: 1px solid rgba(46, 213, 115, 0.06);
+            border-radius: 14px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .info-box p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
+
+        .info-box strong {
+            color: #2ed573;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.06);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .footer span {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.08);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 14px 22px;
+            border-radius: 14px;
+            color: white;
+            font-weight: 500;
+            font-size: 13px;
+            z-index: 99999;
+            animation: toastIn 0.5s ease;
+            box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.5);
+            max-width: 90%;
+            font-family: 'Segoe UI', sans-serif;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .toast-success {
+            background: rgba(46, 213, 115, 0.9);
+        }
+
+        .toast-error {
+            background: rgba(233, 69, 96, 0.9);
+        }
+
+        .toast-info {
+            background: rgba(79, 172, 254, 0.9);
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        .toast-hide {
+            animation: toastOut 0.4s ease forwards;
+        }
+
+        @keyframes toastOut {
+            to {
+                opacity: 0;
+                transform: translateX(40px) scale(0.95);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .admin-container {
+                padding: 24px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn-group .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ANTI-DEVELOPER TOOLS PERSISTENTE ===== -->
+    <script>
+        (function antiDevTools() {
+            let devToolsBlocked = false;
+            let devToolsCheckInterval = null;
+
+            function createBlocker() {
+                if (document.getElementById('devtools-blocker')) return;
+
+                const blocker = document.createElement('div');
+                blocker.id = 'devtools-blocker';
+                blocker.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.97);
+                    backdrop-filter: blur(20px);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 999999;
+                    color: white;
+                    font-family: 'Segoe UI', sans-serif;
+                    flex-direction: column;
+                    gap: 20px;
+                    animation: fadeIn 0.4s ease;
+                    pointer-events: auto;
+                `;
+                blocker.innerHTML = `
+                    <span style="font-size: 48px;">🚫</span>
+                    <p style="color: rgba(255,255,255,0.4); font-size: 18px;">Developer tools detected</p>
+                    <p style="color: rgba(255,255,255,0.2); font-size: 14px;">Please close the developer tools to continue</p>
+                    <button onclick="location.reload()" style="
+                        padding: 12px 32px;
+                        background: rgba(255,255,255,0.05);
+                        border: 1px solid rgba(255,255,255,0.06);
+                        border-radius: 12px;
+                        color: white;
+                        font-size: 15px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        margin-top: 10px;
+                    ">🔄 Reload page</button>
+                `;
+                document.body.appendChild(blocker);
+
+                if (!document.getElementById('devtools-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'devtools-style';
+                    style.textContent = `
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.removedNodes.length > 0) {
+                            if (!document.getElementById('devtools-blocker')) {
+                                createBlocker();
+                            }
+                        }
+                    });
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+                window._devtoolsObserver = observer;
+            }
+
+            function blockDevTools() {
+                if (devToolsBlocked) return;
+                devToolsBlocked = true;
+                createBlocker();
+                if (devToolsCheckInterval) {
+                    clearInterval(devToolsCheckInterval);
+                    devToolsCheckInterval = null;
+                }
+            }
+
+            function checkDevTools() {
+                if (devToolsBlocked) return;
+                
+                const before = new Date();
+                debugger;
+                const after = new Date();
+                if (after - before > 100) {
+                    blockDevTools();
+                    return;
+                }
+
+                const threshold = 160;
+                const widthDiff = window.outerWidth - window.innerWidth;
+                const heightDiff = window.outerHeight - window.innerHeight;
+                if (widthDiff > threshold || heightDiff > threshold) {
+                    blockDevTools();
+                    return;
+                }
+
+                if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
+                    blockDevTools();
+                    return;
+                }
+
+                const blocker = document.getElementById('devtools-blocker');
+                if (blocker && blocker.style.display === 'none') {
+                    blocker.style.display = 'flex';
+                }
+            }
+
+            function startDevToolsDetection() {
+                if (devToolsCheckInterval) {
+                    clearInterval(devToolsCheckInterval);
+                }
+                devToolsCheckInterval = setInterval(checkDevTools, 400);
+                setTimeout(checkDevTools, 100);
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                    blockDevTools();
+                    return false;
+                }
+                if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
+                    e.preventDefault();
+                    blockDevTools();
+                    return false;
+                }
+                if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+                    e.preventDefault();
+                    blockDevTools();
+                    return false;
+                }
+                if (e.ctrlKey && e.key.toUpperCase() === 'S') {
+                    e.preventDefault();
+                    blockDevTools();
+                    return false;
+                }
+            });
+
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+
+            const originalRemoveChild = Element.prototype.removeChild;
+            Element.prototype.removeChild = function(child) {
+                if (child && child.id === 'devtools-blocker') {
+                    setTimeout(() => {
+                        if (!document.getElementById('devtools-blocker')) {
+                            createBlocker();
+                        }
+                    }, 10);
+                    return originalRemoveChild.call(this, child);
+                }
+                return originalRemoveChild.call(this, child);
+            };
+
+            const originalRemove = Element.prototype.remove;
+            Element.prototype.remove = function() {
+                if (this.id === 'devtools-blocker') {
+                    setTimeout(() => {
+                        if (!document.getElementById('devtools-blocker')) {
+                            createBlocker();
+                        }
+                    }, 10);
+                    return;
+                }
+                return originalRemove.call(this);
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', startDevToolsDetection);
+            } else {
+                startDevToolsDetection();
+            }
+
+            const observer = new MutationObserver(function() {
+                if (!document.getElementById('devtools-blocker') && devToolsBlocked) {
+                    createBlocker();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            window._devtoolsMutationObserver = observer;
+
+        })();
+    </script>
+
+    <div class="admin-container" id="app">
+        <div class="header">
+            <h1>
+                🔒 Link <span>Lock</span> <span style="font-size:14px;background:none;-webkit-text-fill-color:rgba(255,255,255,0.15);">V2</span>
+                <span class="badge badge-admin">Admin</span>
+            </h1>
+            <div class="badges">
+                <span class="badge badge-locked">🔐 Protected</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="url-input">🌐 URL to protect</label>
+            <input type="url" id="url-input" placeholder="https://example.com/secret-page" value="https://example.com">
+        </div>
+
+        <div class="info-box">
+            <p>🔑 Decryption password is fixed: <strong>pippo</strong></p>
+        </div>
+
+        <div class="advanced-toggle" id="advanced-toggle">
+            ⚙️ Advanced options <span id="advanced-arrow">▶</span>
+        </div>
+
+        <div class="advanced-options" id="advanced-options">
+            <div class="checkbox-group">
+                <input type="checkbox" id="random-iv" checked>
+                <label for="random-iv">🔀 Use random IV</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="random-salt">
+                <label for="random-salt">🧂 Use random salt</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="add-expiry">
+                <label for="add-expiry">⏰ Add expiration</label>
+            </div>
+            <div class="form-group" id="expiry-group" style="display:none; margin-top:10px;">
+                <input type="datetime-local" id="expiry-date">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" id="encrypt-btn">🔐 Create Protected Link</button>
+            <button class="btn btn-secondary" id="reset-btn">↻ Reset</button>
+        </div>
+
+        <div class="result-box" id="result-box">
+            <div class="result-label">🔗 Generated Link</div>
+            <div class="result-value" id="result-value"></div>
+            <div class="result-actions">
+                <button class="btn btn-success btn-sm" id="copy-btn">📋 Copy</button>
+                <button class="btn btn-primary btn-sm" id="open-btn">🔗 Open Link</button>
+                <button class="btn btn-secondary btn-sm" id="qr-btn">📱 QR Code</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span>⚡ Link Lock V2 • Pippo Edition</span>
+        </div>
+    </div>
+
+    <script src="b64.js"></script>
+    <script src="api.js"></script>
+    <script src="index.js"></script>
+
+</body>
+</html>
