@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link Lock V2 - Encrypt</title>
     <link rel="icon" href="favicon.ico">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
         * {
             margin: 0;
@@ -20,6 +23,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
         }
 
         .admin-container {
@@ -307,21 +311,29 @@
 
         .footer {
             margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
             text-align: center;
-            color: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.25);
             font-size: 11px;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            font-weight: 500;
         }
 
         .footer span {
             display: inline-block;
-            padding: 2px 12px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            font-size: 9px;
+            padding: 3px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 10px;
             letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .footer strong {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
         }
 
         .toast {
@@ -376,6 +388,66 @@
             }
         }
 
+        /* ===== ANTI-DEVTOOLS BLOCKER ===== */
+        .devtools-blocker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.97);
+            backdrop-filter: blur(20px);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            animation: fadeIn 0.4s ease;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .devtools-blocker.active {
+            display: flex;
+        }
+
+        .devtools-blocker .blocker-icon {
+            font-size: 48px;
+        }
+
+        .devtools-blocker .blocker-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .devtools-blocker .blocker-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .devtools-blocker .blocker-btn {
+            padding: 10px 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        .devtools-blocker .blocker-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -400,201 +472,33 @@
             .btn-group .btn {
                 width: 100%;
             }
+            .devtools-blocker .blocker-title {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .admin-container {
+                padding: 18px 14px 16px;
+            }
+            .header h1 {
+                font-size: 17px;
+            }
+            .devtools-blocker .blocker-title {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== ANTI-DEVELOPER TOOLS PERSISTENTE ===== -->
-    <script>
-        (function antiDevTools() {
-            let devToolsBlocked = false;
-            let devToolsCheckInterval = null;
-
-            function createBlocker() {
-                if (document.getElementById('devtools-blocker')) return;
-
-                const blocker = document.createElement('div');
-                blocker.id = 'devtools-blocker';
-                blocker.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.97);
-                    backdrop-filter: blur(20px);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 999999;
-                    color: white;
-                    font-family: 'Segoe UI', sans-serif;
-                    flex-direction: column;
-                    gap: 20px;
-                    animation: fadeIn 0.4s ease;
-                    pointer-events: auto;
-                `;
-                blocker.innerHTML = `
-                    <span style="font-size: 48px;">🚫</span>
-                    <p style="color: rgba(255,255,255,0.4); font-size: 18px;">Developer tools detected</p>
-                    <p style="color: rgba(255,255,255,0.2); font-size: 14px;">Please close the developer tools to continue</p>
-                    <button onclick="location.reload()" style="
-                        padding: 12px 32px;
-                        background: rgba(255,255,255,0.05);
-                        border: 1px solid rgba(255,255,255,0.06);
-                        border-radius: 12px;
-                        color: white;
-                        font-size: 15px;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        margin-top: 10px;
-                    ">🔄 Reload page</button>
-                `;
-                document.body.appendChild(blocker);
-
-                if (!document.getElementById('devtools-style')) {
-                    const style = document.createElement('style');
-                    style.id = 'devtools-style';
-                    style.textContent = `
-                        @keyframes fadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.removedNodes.length > 0) {
-                            if (!document.getElementById('devtools-blocker')) {
-                                createBlocker();
-                            }
-                        }
-                    });
-                });
-                observer.observe(document.body, { childList: true, subtree: true });
-                window._devtoolsObserver = observer;
-            }
-
-            function blockDevTools() {
-                if (devToolsBlocked) return;
-                devToolsBlocked = true;
-                createBlocker();
-                if (devToolsCheckInterval) {
-                    clearInterval(devToolsCheckInterval);
-                    devToolsCheckInterval = null;
-                }
-            }
-
-            function checkDevTools() {
-                if (devToolsBlocked) return;
-                
-                const before = new Date();
-                debugger;
-                const after = new Date();
-                if (after - before > 100) {
-                    blockDevTools();
-                    return;
-                }
-
-                const threshold = 160;
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if (widthDiff > threshold || heightDiff > threshold) {
-                    blockDevTools();
-                    return;
-                }
-
-                if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
-                    blockDevTools();
-                    return;
-                }
-
-                const blocker = document.getElementById('devtools-blocker');
-                if (blocker && blocker.style.display === 'none') {
-                    blocker.style.display = 'flex';
-                }
-            }
-
-            function startDevToolsDetection() {
-                if (devToolsCheckInterval) {
-                    clearInterval(devToolsCheckInterval);
-                }
-                devToolsCheckInterval = setInterval(checkDevTools, 400);
-                setTimeout(checkDevTools, 100);
-            }
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'F12') {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-                if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-                if (e.ctrlKey && e.key.toUpperCase() === 'U') {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-                if (e.ctrlKey && e.key.toUpperCase() === 'S') {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-            });
-
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-            });
-
-            const originalRemoveChild = Element.prototype.removeChild;
-            Element.prototype.removeChild = function(child) {
-                if (child && child.id === 'devtools-blocker') {
-                    setTimeout(() => {
-                        if (!document.getElementById('devtools-blocker')) {
-                            createBlocker();
-                        }
-                    }, 10);
-                    return originalRemoveChild.call(this, child);
-                }
-                return originalRemoveChild.call(this, child);
-            };
-
-            const originalRemove = Element.prototype.remove;
-            Element.prototype.remove = function() {
-                if (this.id === 'devtools-blocker') {
-                    setTimeout(() => {
-                        if (!document.getElementById('devtools-blocker')) {
-                            createBlocker();
-                        }
-                    }, 10);
-                    return;
-                }
-                return originalRemove.call(this);
-            };
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', startDevToolsDetection);
-            } else {
-                startDevToolsDetection();
-            }
-
-            const observer = new MutationObserver(function() {
-                if (!document.getElementById('devtools-blocker') && devToolsBlocked) {
-                    createBlocker();
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
-            window._devtoolsMutationObserver = observer;
-
-        })();
-    </script>
+    <!-- ===== ANTI-DEVELOPER TOOLS (solo se attivati) ===== -->
+    <div class="devtools-blocker" id="devtools-blocker">
+        <span class="blocker-icon">🚫</span>
+        <div class="blocker-title">Developer Tools Detected</div>
+        <div class="blocker-text">Please close the developer tools to continue using the application.</div>
+        <button class="blocker-btn" id="devtools-reload">🔄 Reload Page</button>
+    </div>
 
     <div class="admin-container" id="app">
         <div class="header">
@@ -654,12 +558,116 @@
         </div>
 
         <div class="footer">
-            <span>⚡ Link Lock V2 • Pippo Edition</span>
+            <span><strong>⚡</strong> Link Lock V2 <strong>•</strong> Pippo Edition</span>
         </div>
     </div>
 
     <script src="api.js"></script>
     <script src="index.js"></script>
+
+    <script>
+        // ============================================================
+        //  ANTI-DEVELOPER TOOLS (solo se attivati)
+        // ============================================================
+
+        (function antiDevTools() {
+            var blocker = document.getElementById('devtools-blocker');
+            var reloadBtn = document.getElementById('devtools-reload');
+            var devToolsActive = false;
+            var checkInterval = null;
+
+            function activateBlocker() {
+                if (devToolsActive) return;
+                devToolsActive = true;
+                blocker.classList.add('active');
+                if (checkInterval) {
+                    clearInterval(checkInterval);
+                    checkInterval = null;
+                }
+            }
+
+            function checkDevTools() {
+                if (devToolsActive) return;
+
+                // Metodo 1: debugger (rileva console aperta)
+                var before = new Date();
+                debugger;
+                var after = new Date();
+                if (after - before > 100) {
+                    activateBlocker();
+                    return;
+                }
+
+                // Metodo 2: dimensioni finestra (rileva pannello laterale)
+                var threshold = 160;
+                var widthDiff = window.outerWidth - window.innerWidth;
+                var heightDiff = window.outerHeight - window.innerHeight;
+                if (widthDiff > threshold || heightDiff > threshold) {
+                    activateBlocker();
+                    return;
+                }
+
+                // Metodo 3: Firebug
+                if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
+                    activateBlocker();
+                    return;
+                }
+            }
+
+            // ===== BLOCCA TASTI SOLO SE PREMUTI =====
+            document.addEventListener('keydown', function(e) {
+                // F12
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+                // Ctrl+Shift+I, Ctrl+Shift+J
+                if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+                // Ctrl+U (view source)
+                if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+                // Ctrl+S (save page)
+                if (e.ctrlKey && e.key.toUpperCase() === 'S') {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+            });
+
+            // ===== BLOCCA TASTO DESTRO =====
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+
+            // ===== AVVIA CONTROLLO PERIODICO =====
+            checkInterval = setInterval(checkDevTools, 1000);
+            setTimeout(checkDevTools, 200);
+
+            // ===== RELOAD BUTTON =====
+            if (reloadBtn) {
+                reloadBtn.addEventListener('click', function() {
+                    location.reload();
+                });
+            }
+
+            // ===== SE L'UTENTE RIMUOVE IL BLOCKER, RIAVVIA =====
+            var observer = new MutationObserver(function() {
+                if (!document.getElementById('devtools-blocker') && devToolsActive) {
+                    location.reload();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+
+        })();
+    </script>
 
 </body>
 </html>

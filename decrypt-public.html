@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link Lock V2 - Decrypt</title>
     <link rel="icon" href="favicon.ico">
-    <!-- ===== FORZA AGGIORNAMENTO CACHE ===== -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -47,20 +46,10 @@
         }
 
         @keyframes floatParticle {
-            0% { 
-                transform: translateY(110vh) scale(0.5); 
-                opacity: 0; 
-            }
-            5% { 
-                opacity: 0.8; 
-            }
-            85% { 
-                opacity: 0.8; 
-            }
-            100% { 
-                transform: translateY(-10vh) scale(1.2); 
-                opacity: 0; 
-            }
+            0% { transform: translateY(110vh) scale(0.5); opacity: 0; }
+            5% { opacity: 0.6; }
+            85% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
         }
 
         body::before {
@@ -431,25 +420,25 @@
         }
 
         .footer {
-            margin-top: 30px;
-            padding-top: 20px;
+            margin-top: 28px;
+            padding-top: 15px;
             border-top: 1px solid rgba(255, 255, 255, 0.04);
             text-align: center;
             color: rgba(255, 255, 255, 0.25);
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.8px;
             font-weight: 500;
         }
 
         .footer .version {
             display: inline-block;
-            padding: 4px 16px;
+            padding: 3px 14px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.04);
-            font-size: 11px;
+            font-size: 10px;
             letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.35);
         }
 
         .footer .version strong {
@@ -500,6 +489,66 @@
             to { opacity: 0; transform: translateX(40px) scale(0.95); }
         }
 
+        /* ===== ANTI-DEVTOOLS BLOCKER ===== */
+        .devtools-blocker {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.97);
+            backdrop-filter: blur(20px);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            animation: fadeIn 0.4s ease;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .devtools-blocker.active {
+            display: flex;
+        }
+
+        .devtools-blocker .blocker-icon {
+            font-size: 48px;
+        }
+
+        .devtools-blocker .blocker-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .devtools-blocker .blocker-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .devtools-blocker .blocker-btn {
+            padding: 10px 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        .devtools-blocker .blocker-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 30px 24px 28px;
@@ -520,6 +569,9 @@
                 font-size: 16px;
                 left: 14px;
             }
+            .devtools-blocker .blocker-title {
+                font-size: 18px;
+            }
         }
 
         @media (max-width: 400px) {
@@ -532,203 +584,22 @@
             #preview .preview-name {
                 font-size: 24px;
             }
+            .devtools-blocker .blocker-title {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== ANTI-DEVELOPER TOOLS PERSISTENTE ===== -->
-    <script>
-        (function antiDevTools() {
-            let devToolsBlocked = false;
-            let devToolsCheckInterval = null;
+    <!-- ===== ANTI-DEVELOPER TOOLS (solo se attivati) ===== -->
+    <div class="devtools-blocker" id="devtools-blocker">
+        <span class="blocker-icon">🚫</span>
+        <div class="blocker-title">Developer Tools Detected</div>
+        <div class="blocker-text">Please close the developer tools to continue using the application.</div>
+        <button class="blocker-btn" id="devtools-reload">🔄 Reload Page</button>
+    </div>
 
-            function createBlocker() {
-                if (document.getElementById('devtools-blocker')) return;
-
-                const blocker = document.createElement('div');
-                blocker.id = 'devtools-blocker';
-                blocker.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.97);
-                    backdrop-filter: blur(20px);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 999999;
-                    color: white;
-                    font-family: 'Segoe UI', sans-serif;
-                    flex-direction: column;
-                    gap: 20px;
-                    animation: fadeIn 0.4s ease;
-                    pointer-events: auto;
-                `;
-                blocker.innerHTML = `
-                    <span style="font-size: 48px;">🚫</span>
-                    <p style="color: rgba(255,255,255,0.4); font-size: 18px;">Developer tools detected</p>
-                    <p style="color: rgba(255,255,255,0.2); font-size: 14px;">Please close the developer tools to continue</p>
-                    <button onclick="location.reload()" style="
-                        padding: 12px 32px;
-                        background: rgba(255,255,255,0.05);
-                        border: 1px solid rgba(255,255,255,0.06);
-                        border-radius: 12px;
-                        color: white;
-                        font-size: 15px;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        margin-top: 10px;
-                    ">🔄 Reload page</button>
-                `;
-                document.body.appendChild(blocker);
-
-                if (!document.getElementById('devtools-style')) {
-                    const style = document.createElement('style');
-                    style.id = 'devtools-style';
-                    style.textContent = `
-                        @keyframes fadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.removedNodes.length > 0) {
-                            if (!document.getElementById('devtools-blocker')) {
-                                createBlocker();
-                            }
-                        }
-                    });
-                });
-                observer.observe(document.body, { childList: true, subtree: true });
-                window._devtoolsObserver = observer;
-            }
-
-            function blockDevTools() {
-                if (devToolsBlocked) return;
-                devToolsBlocked = true;
-                createBlocker();
-                if (devToolsCheckInterval) {
-                    clearInterval(devToolsCheckInterval);
-                    devToolsCheckInterval = null;
-                }
-            }
-
-            function checkDevTools() {
-                if (devToolsBlocked) return;
-                
-                const before = new Date();
-                debugger;
-                const after = new Date();
-                if (after - before > 100) {
-                    blockDevTools();
-                    return;
-                }
-
-                const threshold = 160;
-                const widthDiff = window.outerWidth - window.innerWidth;
-                const heightDiff = window.outerHeight - window.innerHeight;
-                if (widthDiff > threshold || heightDiff > threshold) {
-                    blockDevTools();
-                    return;
-                }
-
-                if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
-                    blockDevTools();
-                    return;
-                }
-
-                const blocker = document.getElementById('devtools-blocker');
-                if (blocker && blocker.style.display === 'none') {
-                    blocker.style.display = 'flex';
-                }
-            }
-
-            function startDevToolsDetection() {
-                if (devToolsCheckInterval) {
-                    clearInterval(devToolsCheckInterval);
-                }
-                devToolsCheckInterval = setInterval(checkDevTools, 400);
-                setTimeout(checkDevTools, 100);
-            }
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'F12') {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-                if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-                if (e.ctrlKey && e.key.toUpperCase() === 'U') {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-                if (e.ctrlKey && e.key.toUpperCase() === 'S') {
-                    e.preventDefault();
-                    blockDevTools();
-                    return false;
-                }
-            });
-
-            document.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-            });
-
-            const originalRemoveChild = Element.prototype.removeChild;
-            Element.prototype.removeChild = function(child) {
-                if (child && child.id === 'devtools-blocker') {
-                    setTimeout(() => {
-                        if (!document.getElementById('devtools-blocker')) {
-                            createBlocker();
-                        }
-                    }, 10);
-                    return originalRemoveChild.call(this, child);
-                }
-                return originalRemoveChild.call(this, child);
-            };
-
-            const originalRemove = Element.prototype.remove;
-            Element.prototype.remove = function() {
-                if (this.id === 'devtools-blocker') {
-                    setTimeout(() => {
-                        if (!document.getElementById('devtools-blocker')) {
-                            createBlocker();
-                        }
-                    }, 10);
-                    return;
-                }
-                return originalRemove.call(this);
-            };
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', startDevToolsDetection);
-            } else {
-                startDevToolsDetection();
-            }
-
-            const observer = new MutationObserver(function() {
-                if (!document.getElementById('devtools-blocker') && devToolsBlocked) {
-                    createBlocker();
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
-            window._devtoolsMutationObserver = observer;
-
-        })();
-    </script>
-
-    <!-- ===== PUNTINI ===== -->
     <div class="particles" id="particles"></div>
 
     <div class="container" id="main-container">
@@ -744,7 +615,7 @@
 
         <div id="form-section">
             <div class="form-group">
-                <label for="password-input" id="password-label">Password</label>
+                <label for="password-input" id="password-label">🔑 Password</label>
                 <div class="input-wrapper">
                     <input type="password" id="password-input" placeholder="Enter the password..." autofocus>
                     <span class="input-icon" id="input-icon">🔑</span>
@@ -772,18 +643,107 @@
         </div>
     </div>
 
-    <script src="api.js?v=2"></script>
+    <script src="b64.js"></script>
+    <script src="api.js"></script>
     <script>
         // ============================================================
+        //  ANTI-DEVELOPER TOOLS (solo se attivati)
+        // ============================================================
+
+        (function antiDevTools() {
+            var blocker = document.getElementById('devtools-blocker');
+            var reloadBtn = document.getElementById('devtools-reload');
+            var devToolsActive = false;
+            var checkInterval = null;
+
+            function activateBlocker() {
+                if (devToolsActive) return;
+                devToolsActive = true;
+                blocker.classList.add('active');
+                if (checkInterval) {
+                    clearInterval(checkInterval);
+                    checkInterval = null;
+                }
+            }
+
+            function checkDevTools() {
+                if (devToolsActive) return;
+
+                var before = new Date();
+                debugger;
+                var after = new Date();
+                if (after - before > 100) {
+                    activateBlocker();
+                    return;
+                }
+
+                var threshold = 160;
+                var widthDiff = window.outerWidth - window.innerWidth;
+                var heightDiff = window.outerHeight - window.innerHeight;
+                if (widthDiff > threshold || heightDiff > threshold) {
+                    activateBlocker();
+                    return;
+                }
+
+                if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
+                    activateBlocker();
+                    return;
+                }
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+                if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+                if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+                if (e.ctrlKey && e.key.toUpperCase() === 'S') {
+                    e.preventDefault();
+                    activateBlocker();
+                    return false;
+                }
+            });
+
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+
+            checkInterval = setInterval(checkDevTools, 1000);
+            setTimeout(checkDevTools, 200);
+
+            if (reloadBtn) {
+                reloadBtn.addEventListener('click', function() {
+                    location.reload();
+                });
+            }
+
+            var observer = new MutationObserver(function() {
+                if (!document.getElementById('devtools-blocker') && devToolsActive) {
+                    location.reload();
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+
+        })();
+
+        // ============================================================
         //  DECRYPT - Fixed Password: pippo
-        //  Redirect immediato - NESSUN RISULTATO VISUALIZZATO
-        //  VERSION: 2.0
         // ============================================================
 
         (function createParticles() {
-            const container = document.getElementById('particles');
-            const count = 60;
-            const colors = [
+            var container = document.getElementById('particles');
+            var count = 60;
+            var colors = [
                 'rgba(46, 213, 115, 0.5)',
                 'rgba(79, 172, 254, 0.4)',
                 'rgba(255, 255, 255, 0.3)',
@@ -791,17 +751,17 @@
                 'rgba(46, 213, 115, 0.3)'
             ];
 
-            for (let i = 0; i < count; i++) {
-                const particle = document.createElement('div');
+            for (var i = 0; i < count; i++) {
+                var particle = document.createElement('div');
                 particle.className = 'particle';
-                const size = Math.random() * 4 + 3;
+                var size = Math.random() * 4 + 3;
                 particle.style.width = size + 'px';
                 particle.style.height = size + 'px';
                 particle.style.background = colors[Math.floor(Math.random() * colors.length)];
                 particle.style.left = Math.random() * 100 + '%';
-                const duration = Math.random() * 17 + 10;
+                var duration = Math.random() * 17 + 10;
                 particle.style.animationDuration = duration + 's';
-                const delay = Math.random() * 3;
+                var delay = Math.random() * 3;
                 particle.style.animationDelay = delay + 's';
                 particle.style.opacity = Math.random() * 0.3 + 0.2;
                 particle.style.boxShadow = '0 0 8px ' + particle.style.background;
@@ -809,19 +769,19 @@
             }
         })();
 
-        const DECRYPT_PASSWORD = "pippo";
-        let isProcessing = false;
-        let typingTimeout = null;
+        var DECRYPT_PASSWORD = "pippo";
+        var isProcessing = false;
+        var typingTimeout = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            const passwordInput = document.getElementById('password-input');
-            const decryptBtn = document.getElementById('decrypt-btn');
-            const errorBox = document.getElementById('error-box');
-            const errorMessage = document.getElementById('error-message');
-            const previewDiv = document.getElementById('preview');
-            const previewName = document.getElementById('preview-name');
-            const passwordLabel = document.getElementById('password-label');
-            const inputIcon = document.getElementById('input-icon');
+            var passwordInput = document.getElementById('password-input');
+            var decryptBtn = document.getElementById('decrypt-btn');
+            var errorBox = document.getElementById('error-box');
+            var errorMessage = document.getElementById('error-message');
+            var previewDiv = document.getElementById('preview');
+            var previewName = document.getElementById('preview-name');
+            var passwordLabel = document.getElementById('password-label');
+            var inputIcon = document.getElementById('input-icon');
 
             function resetFieldEffects() {
                 passwordInput.classList.remove('success', 'error', 'typing');
@@ -834,7 +794,7 @@
                 if (isProcessing) return;
                 passwordInput.classList.add('typing');
                 clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
+                typingTimeout = setTimeout(function() {
                     passwordInput.classList.remove('typing');
                 }, 800);
             }
@@ -864,7 +824,7 @@
                 passwordLabel.classList.add('success');
                 inputIcon.classList.add('success');
 
-                setTimeout(() => {
+                setTimeout(function() {
                     passwordInput.classList.remove('success');
                     passwordLabel.classList.remove('success');
                     inputIcon.classList.remove('success');
@@ -877,32 +837,33 @@
                 passwordLabel.classList.add('error');
                 inputIcon.classList.add('error');
 
-                setTimeout(() => {
+                setTimeout(function() {
                     passwordInput.classList.remove('error');
                     passwordLabel.classList.remove('error');
                     inputIcon.classList.remove('error');
                 }, 1500);
             }
 
-            function showToast(message, type = 'error') {
-                const oldToasts = document.querySelectorAll('.toast');
-                oldToasts.forEach(t => {
+            function showToast(message, type) {
+                type = type || 'error';
+                var oldToasts = document.querySelectorAll('.toast');
+                oldToasts.forEach(function(t) {
                     t.classList.add('toast-hide');
-                    setTimeout(() => t.remove(), 500);
+                    setTimeout(function() { t.remove(); }, 500);
                 });
 
-                const toast = document.createElement('div');
-                toast.className = `toast toast-${type}`;
+                var toast = document.createElement('div');
+                toast.className = 'toast toast-' + type;
                 toast.textContent = message;
                 document.body.appendChild(toast);
-                setTimeout(() => {
+                setTimeout(function() {
                     toast.classList.add('toast-hide');
-                    setTimeout(() => toast.remove(), 500);
+                    setTimeout(function() { toast.remove(); }, 500);
                 }, 3500);
             }
 
             function getHashFromUrl() {
-                const hash = window.location.hash;
+                var hash = window.location.hash;
                 if (hash && hash.length > 1) {
                     return hash.substring(1);
                 }
@@ -911,7 +872,7 @@
 
             function extractPreviewData(hash) {
                 try {
-                    const compressed = JSON.parse(atob(hash));
+                    var compressed = JSON.parse(atob(hash));
                     return {
                         short: compressed.n || null,
                         full: compressed.f || null
@@ -922,14 +883,14 @@
             }
 
             function showPreviewFromHash() {
-                const hash = getHashFromUrl();
+                var hash = getHashFromUrl();
                 
                 if (!hash) {
                     previewDiv.classList.remove('show');
                     return;
                 }
 
-                const data = extractPreviewData(hash);
+                var data = extractPreviewData(hash);
                 if (data.short) {
                     previewName.textContent = data.short;
                     previewDiv.classList.add('show');
@@ -938,15 +899,14 @@
                 }
             }
 
-            // ===== REDIRECT IMMEDIATO =====
             function redirectToUrl(url) {
                 window.location.href = url;
             }
 
             async function decryptLink() {
-                const password = passwordInput.value.trim();
+                var password = passwordInput.value.trim();
                 
-                const hash = getHashFromUrl();
+                var hash = getHashFromUrl();
                 if (!hash) {
                     errorMessage.textContent = 'No link to decrypt.';
                     errorBox.classList.add('show');
@@ -966,13 +926,13 @@
                 decryptBtn.textContent = '⏳ Decrypting...';
 
                 try {
-                    const compressed = JSON.parse(atob(hash));
+                    var compressed = JSON.parse(atob(hash));
                     
                     if (!compressed.v) {
                         throw new Error('Unsupported link format');
                     }
 
-                    const isCorrect = (password === DECRYPT_PASSWORD);
+                    var isCorrect = (password === DECRYPT_PASSWORD);
                     
                     if (!isCorrect) {
                         showErrorEffect();
@@ -981,16 +941,16 @@
 
                     showSuccessEffect();
 
-                    const decryptedData = await decryptData(compressed, DECRYPT_PASSWORD);
+                    var decryptedData = await decryptData(compressed, DECRYPT_PASSWORD);
                     
-                    let url = decryptedData;
+                    var url = decryptedData;
                     
                     try {
-                        const parsed = JSON.parse(decryptedData);
+                        var parsed = JSON.parse(decryptedData);
                         if (parsed.u) {
                             url = parsed.u;
                             if (parsed.e) {
-                                const expiry = new Date(parsed.e);
+                                var expiry = new Date(parsed.e);
                                 if (expiry < new Date()) {
                                     showToast('⏰ This link has expired!', 'error');
                                 }
@@ -1002,8 +962,7 @@
 
                     showToast('✅ Link decrypted! Redirecting...', 'success');
                     
-                    // Redirect immediato
-                    setTimeout(() => {
+                    setTimeout(function() {
                         redirectToUrl(url);
                     }, 300);
 
@@ -1021,13 +980,13 @@
 
             decryptBtn.addEventListener('click', decryptLink);
 
-            passwordInput.addEventListener('keydown', (e) => {
+            passwordInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     decryptLink();
                 }
             });
 
-            const hashFromUrl = getHashFromUrl();
+            var hashFromUrl = getHashFromUrl();
             if (hashFromUrl) {
                 showPreviewFromHash();
                 showToast('🔗 Link detected! Enter the password.', 'info');
@@ -1038,7 +997,7 @@
                 previewDiv.classList.remove('show');
             }
 
-            setTimeout(() => {
+            setTimeout(function() {
                 passwordInput.focus();
             }, 500);
         });
