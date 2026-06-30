@@ -24,5 +24,5 @@ A secure, client-side URL encryption tool with password protection. Encrypt any 
 ### Decryption Page (`decrypt-public.html`)
 1. User opens the encrypted link
 2. Enters the decryption password
-3. Link is decrypted and user is redirected after 5 seconds
-4. Preview name (e.g., `Viki`, `Akia`) is shown for recognized domains
+3. Link is decrypted and user is redirected to the selected Host
+4. Preview name is shown for recognized domains
