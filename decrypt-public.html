@@ -9,6 +9,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <style>
+        /* ===== STILE COMPLETO (invariato) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -509,6 +510,7 @@
             animation: fadeIn 0.4s ease;
             padding: 20px;
             text-align: center;
+            pointer-events: auto;
         }
 
         .devtools-blocker.active {
@@ -547,6 +549,11 @@
 
         .devtools-blocker .blocker-btn:hover {
             background: rgba(255, 255, 255, 0.08);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @media (max-width: 600px) {
@@ -592,7 +599,7 @@
 </head>
 <body>
 
-    <!-- ===== ANTI-DEVELOPER TOOLS (solo se attivati) ===== -->
+    <!-- ===== ANTI-DEVELOPER TOOLS (SOLO MOBILE COMPATIBILE) ===== -->
     <div class="devtools-blocker" id="devtools-blocker">
         <span class="blocker-icon">🚫</span>
         <div class="blocker-title">Developer Tools Detected</div>
@@ -647,7 +654,8 @@
     <script src="api.js"></script>
     <script>
         // ============================================================
-        //  ANTI-DEVELOPER TOOLS (solo se attivati)
+        //  ANTI-DEVELOPER TOOLS - MOBILE COMPATIBILE
+        //  NESSUN CONTROLLO DIMENSIONI (causa falsi positivi su mobile)
         // ============================================================
 
         (function antiDevTools() {
@@ -669,6 +677,7 @@
             function checkDevTools() {
                 if (devToolsActive) return;
 
+                // ===== METODO 1: debugger (rileva console aperta) =====
                 var before = new Date();
                 debugger;
                 var after = new Date();
@@ -677,36 +686,36 @@
                     return;
                 }
 
-                var threshold = 160;
-                var widthDiff = window.outerWidth - window.innerWidth;
-                var heightDiff = window.outerHeight - window.innerHeight;
-                if (widthDiff > threshold || heightDiff > threshold) {
-                    activateBlocker();
-                    return;
-                }
-
+                // ===== METODO 2: Firebug =====
                 if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
                     activateBlocker();
                     return;
                 }
+
+                // ===== RIMOSSO: controllo dimensioni (causa falsi positivi su mobile) =====
             }
 
+            // ===== BLOCCA TASTI =====
             document.addEventListener('keydown', function(e) {
+                // F12
                 if (e.key === 'F12') {
                     e.preventDefault();
                     activateBlocker();
                     return false;
                 }
+                // Ctrl+Shift+I, Ctrl+Shift+J
                 if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
                     e.preventDefault();
                     activateBlocker();
                     return false;
                 }
+                // Ctrl+U (view source)
                 if (e.ctrlKey && e.key.toUpperCase() === 'U') {
                     e.preventDefault();
                     activateBlocker();
                     return false;
                 }
+                // Ctrl+S (save page)
                 if (e.ctrlKey && e.key.toUpperCase() === 'S') {
                     e.preventDefault();
                     activateBlocker();
@@ -714,19 +723,23 @@
                 }
             });
 
+            // ===== BLOCCA TASTO DESTRO =====
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
             });
 
+            // ===== AVVIA CONTROLLO =====
             checkInterval = setInterval(checkDevTools, 1000);
             setTimeout(checkDevTools, 200);
 
+            // ===== RELOAD BUTTON =====
             if (reloadBtn) {
                 reloadBtn.addEventListener('click', function() {
                     location.reload();
                 });
             }
 
+            // ===== SE IL BLOCKER VIENE RIMOSSO, RICARICA =====
             var observer = new MutationObserver(function() {
                 if (!document.getElementById('devtools-blocker') && devToolsActive) {
                     location.reload();
