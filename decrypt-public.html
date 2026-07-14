@@ -331,9 +331,45 @@
             50% { left: 100%; }
         }
 
+        /* ===== PREVIEW - LINK DETECTED (spostato sopra AB) ===== */
+        #preview {
+            margin-top: 6px;
+            margin-bottom: 10px;
+            padding: 12px 20px;
+            background: rgba(79, 172, 254, 0.04);
+            border: 1px solid rgba(79, 172, 254, 0.06);
+            border-radius: 14px;
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        #preview.show {
+            display: block;
+        }
+
+        #preview .preview-label {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        #preview .preview-name {
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4facfe, #2ed573);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 4px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
         /* ===== AB SUGGESTION - EFFETTO AURORA ===== */
         .ab-suggestion {
-            margin: 6px 0 0 0;
+            margin: 0 0 0 0;
             padding: 20px 24px 16px;
             background: linear-gradient(145deg, rgba(46, 213, 115, 0.06), rgba(26, 26, 46, 0.7));
             border: 1px solid rgba(46, 213, 115, 0.12);
@@ -420,7 +456,6 @@
             }
         }
 
-        /* Particelle luminose */
         .ab-suggestion .particle-glow {
             position: absolute;
             width: 4px;
@@ -750,102 +785,6 @@
             transform: translateX(8px);
         }
 
-        /* Versione compatta per mobile */
-        @media (max-width: 600px) {
-            .ab-suggestion {
-                padding: 16px 18px 14px;
-            }
-            .ab-suggestion-icon-wrapper {
-                width: 56px;
-                height: 56px;
-            }
-            .ab-suggestion-icon img {
-                width: 38px;
-                height: 38px;
-            }
-            .ab-suggestion-text .line1 {
-                font-size: 13px;
-            }
-            .ab-suggestion-text .line2 a {
-                font-size: 14px;
-            }
-            .ab-feature {
-                font-size: 11px;
-            }
-            .ab-suggestion-icon-wrapper .glow-pulse {
-                inset: -8px;
-            }
-            .ab-suggestion-icon-wrapper .glow-soft {
-                inset: -18px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .ab-suggestion {
-                padding: 14px 16px 12px;
-            }
-            .ab-suggestion-icon-wrapper {
-                width: 48px;
-                height: 48px;
-            }
-            .ab-suggestion-icon img {
-                width: 32px;
-                height: 32px;
-            }
-            .ab-suggestion-text .line1 {
-                font-size: 12px;
-            }
-            .ab-suggestion-text .line2 a {
-                font-size: 13px;
-            }
-            .ab-feature {
-                font-size: 10px;
-            }
-            .ab-features {
-                gap: 2px 0;
-            }
-            .ab-suggestion-icon-wrapper .glow-pulse {
-                inset: -6px;
-            }
-            .ab-suggestion-icon-wrapper .glow-soft {
-                inset: -14px;
-            }
-        }
-
-        #preview {
-            margin-top: 20px;
-            padding: 15px 20px;
-            background: rgba(79, 172, 254, 0.04);
-            border: 1px solid rgba(79, 172, 254, 0.06);
-            border-radius: 14px;
-            display: none;
-            text-align: center;
-            animation: fadeIn 0.4s ease;
-        }
-
-        #preview.show {
-            display: block;
-        }
-
-        #preview .preview-label {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        #preview .preview-name {
-            font-size: 38px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #4facfe, #2ed573);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-top: 4px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-        }
-
         .error-box {
             background: rgba(233, 69, 96, 0.06);
             border: 1px solid rgba(233, 69, 96, 0.1);
@@ -1014,6 +953,95 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* Versione compatta per mobile */
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 24px 28px;
+            }
+            .header h1 {
+                font-size: 22px;
+            }
+            #preview .preview-name {
+                font-size: 30px;
+            }
+            .form-group input {
+                padding: 14px 16px;
+                padding-left: 44px;
+                font-size: 15px;
+            }
+            .input-icon {
+                font-size: 16px;
+                left: 14px;
+            }
+            .ab-suggestion {
+                padding: 16px 18px 14px;
+            }
+            .ab-suggestion-icon-wrapper {
+                width: 56px;
+                height: 56px;
+            }
+            .ab-suggestion-icon img {
+                width: 38px;
+                height: 38px;
+            }
+            .ab-suggestion-text .line1 {
+                font-size: 13px;
+            }
+            .ab-suggestion-text .line2 a {
+                font-size: 14px;
+            }
+            .ab-feature {
+                font-size: 11px;
+            }
+            .ab-suggestion-icon-wrapper .glow-pulse {
+                inset: -8px;
+            }
+            .ab-suggestion-icon-wrapper .glow-soft {
+                inset: -18px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 24px 16px 20px;
+            }
+            .header h1 {
+                font-size: 19px;
+            }
+            #preview .preview-name {
+                font-size: 24px;
+            }
+            .ab-suggestion {
+                padding: 14px 16px 12px;
+            }
+            .ab-suggestion-icon-wrapper {
+                width: 48px;
+                height: 48px;
+            }
+            .ab-suggestion-icon img {
+                width: 32px;
+                height: 32px;
+            }
+            .ab-suggestion-text .line1 {
+                font-size: 12px;
+            }
+            .ab-suggestion-text .line2 a {
+                font-size: 13px;
+            }
+            .ab-feature {
+                font-size: 10px;
+            }
+            .ab-features {
+                gap: 2px 0;
+            }
+            .ab-suggestion-icon-wrapper .glow-pulse {
+                inset: -6px;
+            }
+            .ab-suggestion-icon-wrapper .glow-soft {
+                inset: -14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1053,6 +1081,12 @@
                 <span class="btn-shine"></span>
                 🔓 Decrypt Link
             </button>
+
+            <!-- PREVIEW - LINK DETECTED (spostato qui) -->
+            <div id="preview">
+                <div class="preview-label">📎 Link detected</div>
+                <div class="preview-name" id="preview-name"></div>
+            </div>
 
             <!-- AB SUGGESTION - EFFETTO AURORA -->
             <div class="ab-suggestion" id="ab-suggestion">
@@ -1101,11 +1135,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="preview">
-            <div class="preview-label">📎 Link detected</div>
-            <div class="preview-name" id="preview-name"></div>
         </div>
 
         <div class="error-box" id="error-box">
