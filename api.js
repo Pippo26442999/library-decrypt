@@ -9,7 +9,9 @@ const PREVIEW_MAP = {
     'vikingfile': 'Viki',
     'filekeeper': 'FileK',
     'datavault': 'Vault',
-    'datanodes': 'Data'
+    'datanodes': 'Data',
+    'theditch': 'FileD',
+    'fileditchfiles': 'FileD'
 };
 
 function getPreviewName(domain) {
