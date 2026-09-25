@@ -11,7 +11,7 @@ const PREVIEW_MAP = {
     'datavault': 'Vault',
     'datanodes': 'Data',
     'theditch': 'FileD',
-    'link-vault.org': 'LinkV',
+    'link-vault.org': 'MultiParts',
     'fileditchfiles': 'FileD'
 };
 
