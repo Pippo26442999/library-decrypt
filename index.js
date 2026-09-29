@@ -18,7 +18,7 @@ if (!sessionStorage.getItem('linklock_unlocked')) {
         z-index: 999999;
         font-family: 'Segoe UI', sans-serif;
     `;
-    
+
     overlay.innerHTML = `
         <div style="background: rgba(26,26,46,0.9); padding: 40px; border-radius: 28px; max-width: 400px; width: 90%; border: 1px solid rgba(255,255,255,0.06); text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.8);">
             <h1 style="font-size: 4em; margin-bottom: 10px;">🔒</h1>
@@ -53,13 +53,13 @@ if (!sessionStorage.getItem('linklock_unlocked')) {
             <p style="color: rgba(255,255,255,0.08); font-size: 11px; margin-top: 15px;">Only the admin can create new links</p>
         </div>
     `;
-    
+
     document.body.appendChild(overlay);
-    
+
     const passwordInput = document.getElementById('unlock-password');
     const errorDiv = document.getElementById('unlock-error');
     const unlockBtn = document.getElementById('unlock-btn');
-    
+
     function attemptUnlock() {
         const pass = passwordInput.value.trim();
         if (pass === MASTER_PASSWORD) {
@@ -75,7 +75,7 @@ if (!sessionStorage.getItem('linklock_unlocked')) {
             return false;
         }
     }
-    
+
     unlockBtn.addEventListener('click', attemptUnlock);
     passwordInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') attemptUnlock();
@@ -90,7 +90,7 @@ function showToast(message, type = 'success') {
         t.classList.add('toast-hide');
         setTimeout(() => t.remove(), 500);
     });
-    
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
@@ -104,9 +104,9 @@ function showToast(message, type = 'success') {
 function initApp() {
     if (window._appInitialized) return;
     window._appInitialized = true;
-    
+
     console.log('✅ App initialized');
-    
+
     const urlInput = document.getElementById('url-input');
     const encryptBtn = document.getElementById('encrypt-btn');
     const resetBtn = document.getElementById('reset-btn');
@@ -123,9 +123,9 @@ function initApp() {
     const addExpiry = document.getElementById('add-expiry');
     const expiryGroup = document.getElementById('expiry-group');
     const expiryDate = document.getElementById('expiry-date');
-    
+
     let generatedLink = '';
-    
+
     let advancedOpen = false;
     if (advancedToggle) {
         advancedToggle.addEventListener('click', () => {
@@ -134,7 +134,7 @@ function initApp() {
             advancedArrow.textContent = advancedOpen ? '▼' : '▶';
         });
     }
-    
+
     if (addExpiry) {
         addExpiry.addEventListener('change', () => {
             expiryGroup.style.display = addExpiry.checked ? 'block' : 'none';
@@ -145,50 +145,50 @@ function initApp() {
             }
         });
     }
-    
+
     if (encryptBtn) {
         encryptBtn.addEventListener('click', async function() {
             const url = urlInput.value.trim();
-            
+
             if (!url) {
                 showToast('❌ Enter a valid URL', 'error');
                 return;
             }
-            
+
             try {
                 new URL(url);
             } catch {
                 showToast('❌ Invalid URL', 'error');
                 return;
             }
-            
+
             encryptBtn.disabled = true;
             encryptBtn.textContent = '⏳ Encrypting...';
-            
+
             try {
                 const data = {
                     v: '0.0.1',
                     u: url
                 };
-                
+
                 if (addExpiry && addExpiry.checked && expiryDate.value) {
                     data.e = new Date(expiryDate.value).toISOString();
                 }
-                
+
                 const encrypted = await encryptData(JSON.stringify(data), DECRYPT_PASSWORD, {
                     randomIv: randomIv ? randomIv.checked : true,
                     randomSalt: randomSalt ? randomSalt.checked : false
                 });
-                
+
                 const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
                 const link = baseUrl + 'decrypt-public.html#' + encrypted;
-                
+
                 generatedLink = link;
                 resultValue.textContent = link;
                 resultBox.classList.add('show');
-                
+
                 showToast('✅ Link created successfully!', 'success');
-                
+
             } catch (error) {
                 showToast('❌ Error: ' + error.message, 'error');
                 console.error(error);
@@ -198,7 +198,7 @@ function initApp() {
             }
         });
     }
-    
+
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
             urlInput.value = '';
@@ -211,7 +211,7 @@ function initApp() {
             showToast('↻ Reset complete', 'info');
         });
     }
-    
+
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
             if (!generatedLink) {
@@ -231,7 +231,7 @@ function initApp() {
             });
         });
     }
-    
+
     if (openBtn) {
         openBtn.addEventListener('click', () => {
             if (generatedLink) {
@@ -239,7 +239,7 @@ function initApp() {
             }
         });
     }
-    
+
     if (qrBtn) {
         qrBtn.addEventListener('click', () => {
             if (!generatedLink) {
@@ -250,9 +250,6 @@ function initApp() {
             window.open(qrUrl, '_blank');
         });
     }
-    
-    // ===== URL DI DEFAULT VUOTO (rimosso esempio) =====
-    // urlInput.value = 'https://example.com/secret-document';
 }
 
 const styleSheet = document.createElement("style");

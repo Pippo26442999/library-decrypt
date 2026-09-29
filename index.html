@@ -492,7 +492,7 @@
 </head>
 <body>
 
-    <!-- ===== ANTI-DEVELOPER TOOLS (solo se attivati) ===== -->
+    <!-- ===== ANTI-DEVELOPER TOOLS ===== -->
     <div class="devtools-blocker" id="devtools-blocker">
         <span class="blocker-icon">🚫</span>
         <div class="blocker-title">Developer Tools Detected</div>
@@ -566,10 +566,6 @@
     <script src="index.js"></script>
 
     <script>
-        // ============================================================
-        //  ANTI-DEVELOPER TOOLS (solo se attivati)
-        // ============================================================
-
         (function antiDevTools() {
             var blocker = document.getElementById('devtools-blocker');
             var reloadBtn = document.getElementById('devtools-reload');
@@ -589,7 +585,6 @@
             function checkDevTools() {
                 if (devToolsActive) return;
 
-                // Metodo 1: debugger (rileva console aperta)
                 var before = new Date();
                 debugger;
                 var after = new Date();
@@ -598,7 +593,6 @@
                     return;
                 }
 
-                // Metodo 2: dimensioni finestra (rileva pannello laterale)
                 var threshold = 160;
                 var widthDiff = window.outerWidth - window.innerWidth;
                 var heightDiff = window.outerHeight - window.innerHeight;
@@ -607,34 +601,28 @@
                     return;
                 }
 
-                // Metodo 3: Firebug
                 if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
                     activateBlocker();
                     return;
                 }
             }
 
-            // ===== BLOCCA TASTI SOLO SE PREMUTI =====
             document.addEventListener('keydown', function(e) {
-                // F12
                 if (e.key === 'F12') {
                     e.preventDefault();
                     activateBlocker();
                     return false;
                 }
-                // Ctrl+Shift+I, Ctrl+Shift+J
                 if (e.ctrlKey && e.shiftKey && ['I', 'J'].includes(e.key.toUpperCase())) {
                     e.preventDefault();
                     activateBlocker();
                     return false;
                 }
-                // Ctrl+U (view source)
                 if (e.ctrlKey && e.key.toUpperCase() === 'U') {
                     e.preventDefault();
                     activateBlocker();
                     return false;
                 }
-                // Ctrl+S (save page)
                 if (e.ctrlKey && e.key.toUpperCase() === 'S') {
                     e.preventDefault();
                     activateBlocker();
@@ -642,23 +630,19 @@
                 }
             });
 
-            // ===== BLOCCA TASTO DESTRO =====
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
             });
 
-            // ===== AVVIA CONTROLLO PERIODICO =====
             checkInterval = setInterval(checkDevTools, 1000);
             setTimeout(checkDevTools, 200);
 
-            // ===== RELOAD BUTTON =====
             if (reloadBtn) {
                 reloadBtn.addEventListener('click', function() {
                     location.reload();
                 });
             }
 
-            // ===== SE L'UTENTE RIMUOVE IL BLOCKER, RIAVVIA =====
             var observer = new MutationObserver(function() {
                 if (!document.getElementById('devtools-blocker') && devToolsActive) {
                     location.reload();

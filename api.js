@@ -36,12 +36,114 @@ function extractDomainFromUrl(url) {
     }
 }
 
+// ===== DATANODES FAILOVER SYSTEM =====
+const DATANODES_DOMAINS = ['datanodes.to', 'datanodes.co'];
+const DATANODES_CACHE_KEY = 'datanodes_available_domain';
+const DATANODES_CACHE_TTL = 5 * 60 * 1000; // 5 minuti
+
+/**
+ * Verifica se un dominio è raggiungibile tramite fetch con timeout.
+ * Usa mode: 'no-cors' perché non ci interessa la risposta, solo se il server risponde.
+ */
+async function isDomainReachable(domain, timeoutMs = 3000) {
+    return new Promise((resolve) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+            resolve(false);
+        }, timeoutMs);
+
+        fetch(`https://${domain}/`, {
+            method: 'HEAD',
+            mode: 'no-cors',
+            cache: 'no-store',
+            signal: controller.signal
+        })
+        .then(() => {
+            clearTimeout(timeoutId);
+            resolve(true);
+        })
+        .catch(() => {
+            clearTimeout(timeoutId);
+            resolve(false);
+        });
+    });
+}
+
+/**
+ * Restituisce il dominio DataNodes attualmente disponibile.
+ * Usa cache in sessionStorage per evitare troppe richieste.
+ */
+async function getAvailableDatanodesDomain() {
+    // Controlla cache
+    try {
+        const cached = sessionStorage.getItem(DATANODES_CACHE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed.expires > Date.now() && DATANODES_DOMAINS.includes(parsed.domain)) {
+                return parsed.domain;
+            }
+        }
+    } catch {
+        // Cache corrotta, ignora
+    }
+
+    // Prova ogni dominio in ordine
+    for (const domain of DATANODES_DOMAINS) {
+        const reachable = await isDomainReachable(domain);
+        if (reachable) {
+            // Salva in cache
+            try {
+                sessionStorage.setItem(DATANODES_CACHE_KEY, JSON.stringify({
+                    domain: domain,
+                    expires: Date.now() + DATANODES_CACHE_TTL
+                }));
+            } catch {
+                // sessionStorage non disponibile
+            }
+            return domain;
+        }
+    }
+
+    // Se nessuno è raggiungibile, ritorna il primo come fallback
+    return DATANODES_DOMAINS[0];
+}
+
+/**
+ * Sostituisce il dominio DataNodes nell'URL con quello disponibile.
+ */
+async function resolveDatanodesUrl(url) {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^www\./, '');
+
+        // Controlla se è un URL DataNodes
+        const isDatanodes = DATANODES_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+        if (!isDatanodes) {
+            return url;
+        }
+
+        const availableDomain = await getAvailableDatanodesDomain();
+
+        // Se il dominio è già quello disponibile, ritorna l'URL originale
+        if (hostname === availableDomain) {
+            return url;
+        }
+
+        // Sostituisci il dominio
+        urlObj.hostname = availableDomain;
+        return urlObj.toString();
+    } catch {
+        return url;
+    }
+}
+
 // ===== COMPRESS PAYLOAD =====
 function compressPayload(payload) {
     const compressed = {
         v: payload.v || '0.0.1'
     };
-    
+
     if (payload.e) compressed.e = payload.e;
     if (payload.s && payload.s !== 'AAAAAAAAAAAAAAAAAAAAAA') {
         compressed.s = payload.s;
@@ -52,7 +154,7 @@ function compressPayload(payload) {
     if (payload.ri === true) compressed.r = 1;
     if (payload.rs === true) compressed.rs = 1;
     if (payload.n) compressed.n = payload.n;
-    
+
     return compressed;
 }
 
@@ -61,23 +163,34 @@ function decompressPayload(compressed) {
     const payload = {
         v: compressed.v || '0.0.1'
     };
-    
+
     if (compressed.e) payload.e = compressed.e;
     payload.s = compressed.s || 'AAAAAAAAAAAAAAAAAAAAAA';
     payload.i = compressed.i || 'AAAAAAAAAAAAAAAAAAAA';
     payload.ri = compressed.r === 1;
     payload.rs = compressed.rs === 1 || false;
     if (compressed.n) payload.n = compressed.n;
-    
+
     return payload;
 }
 
 async function encryptData(data, password, options = {}) {
     const { randomIv = true, randomSalt = false } = options;
-    
+
+    // ===== RISOLVI DATANODES PRIMA DI CRIPTARE =====
+    try {
+        const parsed = JSON.parse(data);
+        if (parsed.u) {
+            parsed.u = await resolveDatanodesUrl(parsed.u);
+            data = JSON.stringify(parsed);
+        }
+    } catch {
+        // Non JSON, procedi normalmente
+    }
+
     const encoder = new TextEncoder();
     const dataBuffer = encoder.encode(data);
-    
+
     let salt;
     let saltBase64;
     if (randomSalt) {
@@ -86,7 +199,7 @@ async function encryptData(data, password, options = {}) {
     } else {
         saltBase64 = 'AAAAAAAAAAAAAAAAAAAAAA';
     }
-    
+
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
         encoder.encode(password),
@@ -94,7 +207,7 @@ async function encryptData(data, password, options = {}) {
         false,
         ['deriveKey']
     );
-    
+
     const key = await crypto.subtle.deriveKey(
         {
             name: 'PBKDF2',
@@ -110,7 +223,7 @@ async function encryptData(data, password, options = {}) {
         false,
         ['encrypt']
     );
-    
+
     let iv;
     let ivBase64;
     if (randomIv) {
@@ -119,7 +232,7 @@ async function encryptData(data, password, options = {}) {
     } else {
         ivBase64 = 'AAAAAAAAAAAAAAAAAAAA';
     }
-    
+
     const encrypted = await crypto.subtle.encrypt(
         {
             name: 'AES-GCM',
@@ -128,9 +241,9 @@ async function encryptData(data, password, options = {}) {
         key,
         dataBuffer
     );
-    
+
     const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-    
+
     // ===== Extract preview name from domain =====
     let previewName = '';
     try {
@@ -144,12 +257,12 @@ async function encryptData(data, password, options = {}) {
     } catch {
         // Not JSON
     }
-    
+
     const payload = {
         v: '0.0.1',
         e: encryptedBase64
     };
-    
+
     if (randomSalt) {
         payload.s = saltBase64;
     }
@@ -159,34 +272,34 @@ async function encryptData(data, password, options = {}) {
     if (randomIv) payload.r = 1;
     if (randomSalt) payload.rs = 1;
     if (previewName) payload.n = previewName;
-    
+
     const compressed = compressPayload(payload);
-    
+
     return btoa(JSON.stringify(compressed));
 }
 
 async function decryptData(data, password) {
     const decoder = new TextDecoder();
-    
+
     const compressed = data;
     const payload = decompressPayload(compressed);
-    
+
     const encrypted = Uint8Array.from(atob(payload.e), c => c.charCodeAt(0));
-    
+
     let salt;
     if (payload.s && payload.s !== 'AAAAAAAAAAAAAAAAAAAAAA') {
         salt = Uint8Array.from(atob(payload.s), c => c.charCodeAt(0));
     } else {
         salt = new Uint8Array(16);
     }
-    
+
     let iv;
     if (payload.i && payload.i !== 'AAAAAAAAAAAAAAAAAAAA') {
         iv = Uint8Array.from(atob(payload.i), c => c.charCodeAt(0));
     } else {
         iv = new Uint8Array(12);
     }
-    
+
     const keyMaterial = await crypto.subtle.importKey(
         'raw',
         new TextEncoder().encode(password),
@@ -194,7 +307,7 @@ async function decryptData(data, password) {
         false,
         ['deriveKey']
     );
-    
+
     const key = await crypto.subtle.deriveKey(
         {
             name: 'PBKDF2',
@@ -210,7 +323,7 @@ async function decryptData(data, password) {
         false,
         ['decrypt']
     );
-    
+
     const decrypted = await crypto.subtle.decrypt(
         {
             name: 'AES-GCM',
@@ -219,6 +332,6 @@ async function decryptData(data, password) {
         key,
         encrypted
     );
-    
+
     return decoder.decode(decrypted);
 }
