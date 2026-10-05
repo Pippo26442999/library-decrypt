@@ -509,20 +509,16 @@ async function buildMultiPayload(urls, options = {}) {
 }
 
 /**
- * Formatta un oggetto JSON con indentazione 4 spazi
- * e aggiunge la virgola finale dopo l'ultimo campo.
+ * Formatta un oggetto JSON con indentazione 4 spazi,
+ * senza graffe esterne e con virgola finale su ogni campo.
  */
 function formatJsonWithTrailingComma(obj) {
     const keys = Object.keys(obj);
-    if (keys.length === 0) return '{}';
+    if (keys.length === 0) return '';
 
-    const lines = ['{'];
-    keys.forEach((key) => {
-        const value = obj[key];
-        lines.push(`    "${key}": "${value}",`);
-    });
-    lines.push('}');
-    return lines.join('\n');
+    return keys.map(key => {
+        return `    "${key}": "${obj[key]}",`;
+    }).join('\n');
 }
 
 const styleSheet = document.createElement("style");
