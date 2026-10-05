@@ -25,6 +25,41 @@ function getPreviewName(domain) {
     return '';
 }
 
+/**
+ * Estrae il nome del servizio dall'hash dell'URL.
+ * Es: https://link-vault.org/c/oSl-LbWa#AkiraBox -> "Akia"
+ *     https://link-vault.org/c/oSl-LbWa#FileKeeper -> "FileK"
+ *     https://link-vault.org/c/oSl-LbWa#DataVaults -> "Vault"
+ *     https://link-vault.org/c/oSl-LbWa#DataNodes  -> "Data"
+ *
+ * IMPORTANTE: ignora 'link-vault.org' per evitare falsi positivi
+ * (il nome del servizio è nell'hash, non nel dominio).
+ */
+function getPreviewNameFromHash(url) {
+    try {
+        const urlObj = new URL(url);
+        let hash = urlObj.hash.replace(/^#/, '').trim();
+        if (!hash) return '';
+
+        // Normalizza: minuscolo e rimuovi eventuali caratteri non alfanumerici
+        const normalized = hash.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // Cerca una corrispondenza nella mappa, ESCLUDENDO 'link-vault.org'
+        // perché è il dominio generico, non un servizio specifico
+        for (const [key, value] of Object.entries(PREVIEW_MAP)) {
+            if (key === 'link-vault.org') continue; // <-- salta il match generico
+
+            const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (normalized.includes(cleanKey) || cleanKey.includes(normalized)) {
+                return value;
+            }
+        }
+    } catch {
+        // URL non valido
+    }
+    return '';
+}
+
 function extractDomainFromUrl(url) {
     try {
         const urlObj = new URL(url);
@@ -244,14 +279,21 @@ async function encryptData(data, password, options = {}) {
 
     const encryptedBase64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
 
-    // ===== Extract preview name from domain =====
+    // ===== Extract preview name =====
+    // PRIORITÀ: prima l'hash (più specifico), poi il dominio
     let previewName = '';
     try {
         const parsed = JSON.parse(data);
         if (parsed.u) {
-            const domain = extractDomainFromUrl(parsed.u);
-            if (domain) {
-                previewName = getPreviewName(domain);
+            // 1) Prova prima dall'hash (es. #AkiraBox, #FileKeeper, ...)
+            previewName = getPreviewNameFromHash(parsed.u);
+
+            // 2) Se non trovato, prova dal dominio
+            if (!previewName) {
+                const domain = extractDomainFromUrl(parsed.u);
+                if (domain) {
+                    previewName = getPreviewName(domain);
+                }
             }
         }
     } catch {
