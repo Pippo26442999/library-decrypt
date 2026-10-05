@@ -333,25 +333,25 @@ function initApp() {
         });
     }
 
-    if (multiCopyBtn) {
-        multiCopyBtn.addEventListener('click', () => {
-            if (!generatedMultiLink) {
-                showToast('❌ No multi-link to copy', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(generatedMultiLink).then(() => {
-                showToast('📋 Multi-link copied!', 'success');
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = generatedMultiLink;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                ta.remove();
-                showToast('📋 Multi-link copied!', 'success');
-            });
+if (multiCopyBtn) {
+    multiCopyBtn.addEventListener('click', () => {
+        if (!generatedMultiJson) {
+            showToast('❌ No multi-link to copy', 'error');
+            return;
+        }
+        navigator.clipboard.writeText(generatedMultiJson).then(() => {
+            showToast('📋 JSON copied!', 'success');
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = generatedMultiJson;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            showToast('📋 JSON copied!', 'success');
         });
-    }
+    });
+}
 
     if (multiOpenBtn) {
         multiOpenBtn.addEventListener('click', () => {
