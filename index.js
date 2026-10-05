@@ -303,7 +303,7 @@ function initApp() {
                     compressed: isCompressed
                 });
 
-                generatedMultiJson = JSON.stringify(result.json, null, 2);
+                generatedMultiJson = formatJsonWithTrailingComma(result.json);
                 multiResultValue.textContent = generatedMultiJson;
                 multiResultBox.classList.add('show');
                 generatedMultiLink = result.link || '';
@@ -333,25 +333,25 @@ function initApp() {
         });
     }
 
-if (multiCopyBtn) {
-    multiCopyBtn.addEventListener('click', () => {
-        if (!generatedMultiJson) {
-            showToast('❌ No multi-link to copy', 'error');
-            return;
-        }
-        navigator.clipboard.writeText(generatedMultiJson).then(() => {
-            showToast('📋 JSON copied!', 'success');
-        }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = generatedMultiJson;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-            showToast('📋 JSON copied!', 'success');
+    if (multiCopyBtn) {
+        multiCopyBtn.addEventListener('click', () => {
+            if (!generatedMultiJson) {
+                showToast('❌ No multi-link to copy', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(generatedMultiJson).then(() => {
+                showToast('📋 JSON copied!', 'success');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = generatedMultiJson;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showToast('📋 JSON copied!', 'success');
+            });
         });
-    });
-}
+    }
 
     if (multiOpenBtn) {
         multiOpenBtn.addEventListener('click', () => {
@@ -387,6 +387,35 @@ if (multiCopyBtn) {
 // ============================================================
 //  MULTI-LINK HELPERS
 // ============================================================
+
+/**
+ * Mappa hash -> chiave dump/fpkg (match esatto + fallback includes).
+ */
+const HASH_TO_KEY = {
+    'datanodes':  'data',
+    'filekeeper': 'filek',
+    'vikingfile': 'viki',
+    'fileditch':  'filed',
+    'akirabox':   'akia'
+};
+
+function hashToKey(hash) {
+    const normalized = hash.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // 1) match esatto
+    if (HASH_TO_KEY[normalized]) {
+        return HASH_TO_KEY[normalized];
+    }
+
+    // 2) fallback: includes
+    for (const [needle, key] of Object.entries(HASH_TO_KEY)) {
+        if (normalized.includes(needle)) {
+            return key;
+        }
+    }
+
+    return null;
+}
 
 /**
  * Raggruppa gli URL per "base" (host + path senza hash).
@@ -427,15 +456,6 @@ async function buildMultiPayload(urls, options = {}) {
     const baseUrl = baseKeys[0];
     const hashes = groups[baseUrl];
 
-    // Mappa hash -> chiave dump/fpkg
-    const hashToKey = {
-        'datanodes': 'data',
-        'filekeeper': 'filek',
-        'vikingfile': 'viki',
-        'fileditch': 'filed',
-        'akirabox': 'akia'
-    };
-
     const siteBase = window.location.origin + window.location.pathname.replace('index.html', '');
 
     // ===== Per ogni hash genera un link cifrato separato =====
@@ -457,17 +477,9 @@ async function buildMultiPayload(urls, options = {}) {
         const link = siteBase + 'decrypt-public.html#' + encrypted;
 
         // Determina la chiave (data, filek, akia, filed, viki)
-        const hLower = h.toLowerCase();
-        let matchedKey = null;
-        for (const [needle, key] of Object.entries(hashToKey)) {
-            if (hLower.includes(needle)) {
-                matchedKey = key;
-                break;
-            }
-        }
-
-        if (matchedKey) {
-            encryptedLinks[matchedKey] = link;
+        const key = hashToKey(h);
+        if (key) {
+            encryptedLinks[key] = link;
         }
     }
 
@@ -494,6 +506,23 @@ async function buildMultiPayload(urls, options = {}) {
     const firstLink = Object.values(encryptedLinks)[0] || '';
 
     return { link: firstLink, json, linksObj: encryptedLinks, baseUrl };
+}
+
+/**
+ * Formatta un oggetto JSON con indentazione 4 spazi
+ * e aggiunge la virgola finale dopo l'ultimo campo.
+ */
+function formatJsonWithTrailingComma(obj) {
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return '{}';
+
+    const lines = ['{'];
+    keys.forEach((key) => {
+        const value = obj[key];
+        lines.push(`    "${key}": "${value}",`);
+    });
+    lines.push('}');
+    return lines.join('\n');
 }
 
 const styleSheet = document.createElement("style");
