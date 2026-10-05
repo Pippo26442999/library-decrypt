@@ -124,7 +124,21 @@ function initApp() {
     const expiryGroup = document.getElementById('expiry-group');
     const expiryDate = document.getElementById('expiry-date');
 
+    // ===== MULTI-LINK ELEMENTS =====
+    const multiInput = document.getElementById('multi-input');
+    const modeDump = document.getElementById('mode-dump');
+    const modeCompressed = document.getElementById('mode-compressed');
+    const multiBtn = document.getElementById('multi-btn');
+    const multiResetBtn = document.getElementById('multi-reset-btn');
+    const multiResultBox = document.getElementById('multi-result-box');
+    const multiResultValue = document.getElementById('multi-result-value');
+    const multiCopyBtn = document.getElementById('multi-copy-btn');
+    const multiOpenBtn = document.getElementById('multi-open-btn');
+    const multiJsonBtn = document.getElementById('multi-json-btn');
+
     let generatedLink = '';
+    let generatedMultiLink = '';
+    let generatedMultiJson = '';
 
     let advancedOpen = false;
     if (advancedToggle) {
@@ -146,6 +160,7 @@ function initApp() {
         });
     }
 
+    // ===== SINGLE LINK =====
     if (encryptBtn) {
         encryptBtn.addEventListener('click', async function() {
             const url = urlInput.value.trim();
@@ -250,6 +265,235 @@ function initApp() {
             window.open(qrUrl, '_blank');
         });
     }
+
+    // ============================================================
+    //  MULTI-LINK GENERATION
+    // ============================================================
+    if (multiBtn) {
+        multiBtn.addEventListener('click', async function() {
+            const raw = multiInput.value.trim();
+            if (!raw) {
+                showToast('❌ Paste at least one URL', 'error');
+                return;
+            }
+
+            const lines = raw.split('\n')
+                .map(l => l.trim())
+                .filter(l => l.length > 0);
+
+            if (lines.length === 0) {
+                showToast('❌ No valid URLs found', 'error');
+                return;
+            }
+
+            const isDump = modeDump && modeDump.checked;
+            const isCompressed = modeCompressed && modeCompressed.checked;
+
+            if (!isDump && !isCompressed) {
+                showToast('❌ Select Dump or Compressed', 'error');
+                return;
+            }
+
+            multiBtn.disabled = true;
+            multiBtn.textContent = '⏳ Generating...';
+
+            try {
+                const result = await buildMultiPayload(lines, {
+                    dump: isDump,
+                    compressed: isCompressed
+                });
+
+                generatedMultiJson = JSON.stringify(result.json, null, 2);
+                multiResultValue.textContent = generatedMultiJson;
+                multiResultBox.classList.add('show');
+                generatedMultiLink = result.link || '';
+
+                showToast('✅ Multi-link generated!', 'success');
+
+            } catch (err) {
+                showToast('❌ Error: ' + err.message, 'error');
+                console.error(err);
+            } finally {
+                multiBtn.disabled = false;
+                multiBtn.textContent = '📦 Generate Multi-Link';
+            }
+        });
+    }
+
+    if (multiResetBtn) {
+        multiResetBtn.addEventListener('click', () => {
+            multiInput.value = '';
+            multiResultBox.classList.remove('show');
+            multiResultValue.textContent = '';
+            generatedMultiLink = '';
+            generatedMultiJson = '';
+            if (modeDump) modeDump.checked = false;
+            if (modeCompressed) modeCompressed.checked = false;
+            showToast('↻ Multi reset complete', 'info');
+        });
+    }
+
+    if (multiCopyBtn) {
+        multiCopyBtn.addEventListener('click', () => {
+            if (!generatedMultiLink) {
+                showToast('❌ No multi-link to copy', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(generatedMultiLink).then(() => {
+                showToast('📋 Multi-link copied!', 'success');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = generatedMultiLink;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showToast('📋 Multi-link copied!', 'success');
+            });
+        });
+    }
+
+    if (multiOpenBtn) {
+        multiOpenBtn.addEventListener('click', () => {
+            if (generatedMultiLink) {
+                window.open(generatedMultiLink, '_blank');
+            } else {
+                showToast('❌ No multi-link to open', 'error');
+            }
+        });
+    }
+
+    if (multiJsonBtn) {
+        multiJsonBtn.addEventListener('click', () => {
+            if (!generatedMultiJson) {
+                showToast('❌ No JSON to copy', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(generatedMultiJson).then(() => {
+                showToast('🧾 JSON copied!', 'success');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = generatedMultiJson;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showToast('🧾 JSON copied!', 'success');
+            });
+        });
+    }
+}
+
+// ============================================================
+//  MULTI-LINK HELPERS
+// ============================================================
+
+/**
+ * Raggruppa gli URL per "base" (host + path senza hash).
+ * Restituisce una mappa { baseUrl: [hash1, hash2, ...] }
+ */
+function groupUrlsByBase(urls) {
+    const groups = {};
+    for (const raw of urls) {
+        try {
+            const u = new URL(raw);
+            const hash = u.hash.replace(/^#/, '');
+            u.hash = '';
+            const base = u.toString();
+            if (!groups[base]) groups[base] = [];
+            if (hash) groups[base].push(hash);
+        } catch {
+            // ignora URL non validi
+        }
+    }
+    return groups;
+}
+
+/**
+ * Costruisce il payload multi-link.
+ * Per OGNI URL singolo viene generato un link cifrato separato.
+ * I campi dump_* / fpkg_* contengono i LINK CIFRATI (non gli URL in chiaro).
+ */
+async function buildMultiPayload(urls, options = {}) {
+    const { dump = false, compressed = false } = options;
+
+    const groups = groupUrlsByBase(urls);
+
+    const baseKeys = Object.keys(groups);
+    if (baseKeys.length === 0) {
+        throw new Error('Nessun URL valido trovato');
+    }
+
+    const baseUrl = baseKeys[0];
+    const hashes = groups[baseUrl];
+
+    // Mappa hash -> chiave dump/fpkg
+    const hashToKey = {
+        'datanodes': 'data',
+        'filekeeper': 'filek',
+        'vikingfile': 'viki',
+        'fileditch': 'filed',
+        'akirabox': 'akia'
+    };
+
+    const siteBase = window.location.origin + window.location.pathname.replace('index.html', '');
+
+    // ===== Per ogni hash genera un link cifrato separato =====
+    const encryptedLinks = {}; // { key: linkCifrato }
+
+    for (const h of hashes) {
+        const fullUrl = baseUrl + '#' + h;
+
+        const payload = {
+            v: '0.0.1',
+            u: fullUrl
+        };
+
+        const encrypted = await encryptData(JSON.stringify(payload), DECRYPT_PASSWORD, {
+            randomIv: true,
+            randomSalt: false
+        });
+
+        const link = siteBase + 'decrypt-public.html#' + encrypted;
+
+        // Determina la chiave (data, filek, akia, filed, viki)
+        const hLower = h.toLowerCase();
+        let matchedKey = null;
+        for (const [needle, key] of Object.entries(hashToKey)) {
+            if (hLower.includes(needle)) {
+                matchedKey = key;
+                break;
+            }
+        }
+
+        if (matchedKey) {
+            encryptedLinks[matchedKey] = link;
+        }
+    }
+
+    // ===== Costruisci JSON di output =====
+    const json = {};
+
+    if (dump) {
+        json.dump_data  = encryptedLinks.data  || '';
+        json.dump_filek = encryptedLinks.filek || '';
+        json.dump_akia  = encryptedLinks.akia  || '';
+        json.dump_filed = encryptedLinks.filed || '';
+        json.dump_viki  = encryptedLinks.viki  || '';
+    }
+
+    if (compressed) {
+        json.fpkg_akia  = encryptedLinks.akia  || '';
+        json.fpkg_viki  = encryptedLinks.viki  || '';
+        json.fpkg_data  = encryptedLinks.data  || '';
+        json.fpkg_filek = encryptedLinks.filek || '';
+        json.fpkg_filed = encryptedLinks.filed || '';
+    }
+
+    // Link "principale" — se serve, usa il primo disponibile
+    const firstLink = Object.values(encryptedLinks)[0] || '';
+
+    return { link: firstLink, json, linksObj: encryptedLinks, baseUrl };
 }
 
 const styleSheet = document.createElement("style");

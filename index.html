@@ -109,7 +109,8 @@
             margin-bottom: 6px;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 14px 18px;
             background: rgba(255, 255, 255, 0.04);
@@ -119,15 +120,25 @@
             font-size: 15px;
             transition: all 0.3s;
             font-family: inherit;
+            resize: vertical;
         }
 
-        .form-group input:focus {
+        .form-group textarea {
+            min-height: 110px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: rgba(79, 172, 254, 0.2);
             background: rgba(255, 255, 255, 0.06);
         }
 
-        .form-group input::placeholder {
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
             color: rgba(255, 255, 255, 0.15);
         }
 
@@ -236,8 +247,9 @@
             border-radius: 10px;
             font-family: 'Courier New', monospace;
             margin-bottom: 12px;
-            max-height: 120px;
+            max-height: 300px;
             overflow-y: auto;
+            white-space: pre-wrap;
         }
 
         .result-box .result-actions {
@@ -307,6 +319,31 @@
 
         .info-box strong {
             color: #2ed573;
+        }
+
+        .section-divider {
+            margin: 30px 0 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-divider .icon {
+            font-size: 16px;
+        }
+
+        .mode-hint {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-top: 6px;
+            font-style: italic;
         }
 
         .footer {
@@ -547,6 +584,7 @@
             <button class="btn btn-secondary" id="reset-btn">↻ Reset</button>
         </div>
 
+        <!-- ===== SINGLE LINK RESULT (AGGIUNTO) ===== -->
         <div class="result-box" id="result-box">
             <div class="result-label">🔗 Generated Link</div>
             <div class="result-value" id="result-value"></div>
@@ -554,6 +592,42 @@
                 <button class="btn btn-success btn-sm" id="copy-btn">📋 Copy</button>
                 <button class="btn btn-primary btn-sm" id="open-btn">🔗 Open Link</button>
                 <button class="btn btn-secondary btn-sm" id="qr-btn">📱 QR Code</button>
+            </div>
+        </div>
+
+        <!-- ===== MULTI-LINK SECTION ===== -->
+        <div class="section-divider">
+            <span class="icon">📦</span>
+            <span>Multi-Link Generation</span>
+        </div>
+
+        <div class="form-group">
+            <label for="multi-input">🧩 Paste multiple URLs (one per line)</label>
+            <textarea id="multi-input" placeholder="https://link-vault.org/c/l4Zmacml#DataNodes&#10;https://link-vault.org/c/l4Zmacml#FileKeeper&#10;https://link-vault.org/c/l4Zmacml#VikingFile&#10;https://link-vault.org/c/l4Zmacml#FileDitch&#10;https://link-vault.org/c/l4Zmacml#AkiraBox"></textarea>
+            <div class="mode-hint">Il primo URL viene usato come base per estrarre il pattern. Gli altri vengono raggruppati per host-hash.</div>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="mode-dump">
+            <label for="mode-dump">📤 Dump</label>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="mode-compressed">
+            <label for="mode-compressed">🗜️ Compressed</label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-success" id="multi-btn">📦 Generate Multi-Link</button>
+            <button class="btn btn-secondary" id="multi-reset-btn">↻ Reset Multi</button>
+        </div>
+
+        <div class="result-box" id="multi-result-box">
+            <div class="result-label">📦 Multi-Link Result</div>
+            <div class="result-value" id="multi-result-value"></div>
+            <div class="result-actions">
+                <button class="btn btn-success btn-sm" id="multi-copy-btn">📋 Copy</button>
+                <button class="btn btn-primary btn-sm" id="multi-open-btn">🔗 Open Link</button>
+                <button class="btn btn-secondary btn-sm" id="multi-json-btn">🧾 Copy JSON</button>
             </div>
         </div>
 
